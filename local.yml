@@ -2,17 +2,17 @@
   connection: local
 
   roles:
-    # 1. Common Base (Directory setup, etc.)
+    # 1. Base System & Shell
+    #    (Common utilities, directory setup, basic Zsh config)
     - common
     - zsh
 
-    # 2. Individual Roles (Refactored components)
-    - fzf
+    # 2. Development Tools (Roles)
+    #    (Installation and config deployment for specific tools)
     - nvim
     - wezterm
     - tmux
 
-    # 3. Legacy Roles (For tools not yet refactored)
-    #    Note: Do not remove yet; tools like neovim, wezterm, etc. are still handled here.
+    # 3. Global Packages
+    #    (Install global CLI tools and GUI apps from all.yml)
     - homebrew
-    # - dotfiles
