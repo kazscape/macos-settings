@@ -1,0 +1,34 @@
+---
+# 1. Install Tmux
+- name: Install Tmux
+  homebrew:
+    name: tmux
+    state: present
+
+# 2. Setup Configuration Directory
+- name: Ensure tmux config directory exists
+  file:
+    path: "~/.config/tmux"
+    state: directory
+    mode: "0755"
+
+# 3. Deploy Configuration
+- name: Deploy tmux.conf
+  copy:
+    src: "{{ role_path }}/files/tmux.conf"
+    dest: "~/.config/tmux/tmux.conf"
+    mode: "0644"
+
+# 4. Install TPM (Tmux Plugin Manager)
+- name: Install TPM
+  git:
+    repo: "https://github.com/tmux-plugins/tpm"
+    dest: "~/.config/tmux/plugins/tpm"
+    version: master
+
+# 5. Deploy Zsh Aliases
+- name: Deploy tmux zsh config to conf.d
+  copy:
+    src: "{{ role_path }}/files/51-tmux.zsh"
+    dest: "~/.config/zsh/conf.d/51-tmux.zsh"
+    mode: "0644"

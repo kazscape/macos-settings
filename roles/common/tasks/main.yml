@@ -20,7 +20,7 @@
 - name: Install fzf-git.sh
   git:
     repo: 'https://github.com/junegunn/fzf-git.sh.git'
-    dest: "~/.config/fzf-git"
+    dest: "~/.local/share/fzf-git"
     version: main
 
 # 3. Configuration Files
