@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  gather_facts: true
+  
+  # group_vars/all.yml は自動的に読み込まれます
+
+  roles:
+    - homebrew    # まずアプリを入れる
+    # - dotfiles    # 設定ファイルを配置する

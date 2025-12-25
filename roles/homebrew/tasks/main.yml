@@ -1,0 +1,16 @@
+---
+- name: Update Homebrew
+  homebrew:
+    update_homebrew: yes
+
+- name: Install Homebrew Packages
+  homebrew:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ homebrew_packages }}"
+
+- name: Install Homebrew Cask Applications
+  homebrew_cask:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ homebrew_cask_apps }}"

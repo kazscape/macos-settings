@@ -1,0 +1,80 @@
+---
+# --- Dotfiles Configuration ---
+dotfiles_repo: "git@github.com:kazscape/dotfiles.git"
+dotfiles_dest: "{{ ansible_env.HOME }/dotfiles"
+
+# --- Formulae (CLI Tools) ---
+homebrew_packages:
+  - 1password-cli
+  - awscli
+  - bat
+  - eza
+  - fd
+  - ffmpeg
+  - ffmpegthumbnailer
+  - fzf
+  - gh
+  - git
+  - git-filter-repo
+  - hatch
+  - git-gui
+  - httpie
+  - imagemagick
+  - im-select
+  - jq
+  - lazygit
+  - lua
+  - mysql
+  - neovim
+  - poppler
+  - powerlevel10k
+  - ripgrep
+  - sevenzip
+  - stow
+  - thefuck
+  - tmux
+  - tpm
+  - tree
+  - volta
+  - yazi
+  - zoxide
+  - zsh
+  - zsh-autosuggestions
+  - zsh-syntax-highlighting
+
+# --- Casks (GUI Apps) ---
+homebrew_cask_apps:
+  - 1password
+  - alfred
+  - alt-tab
+  - antigravity
+  - appcleaner
+  - bartender
+  - brave-browser
+  - chatgpt-atlas
+  - corretto@21
+  - clickup
+  - cron
+  - dbeaver-community
+  - docker
+  - font-plemol-jp-nf
+  - git-credential-manager
+  - intellij-idea
+  - karabiner-elements
+  - keyboardcleantool
+  - keyclu
+  - menubarx
+  - miro
+  - monitorcontrol
+  - mysqlworkbench
+  - nikitabobko/tap/aerospace
+  - notion
+  - pgadmin4
+  - pycharm-ce
+  - postman
+  - raycast
+  - session-manager-plugin
+  - shottr
+  - visual-studio-code
+  - vlc
+  - wezterm
