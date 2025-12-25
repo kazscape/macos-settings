@@ -1,13 +1,13 @@
 # macOS Setup with Ansible
 
-This repository automates the provisioning and configuration of a macOS development environment using **Ansible**. It manages Homebrew packages, dotfiles (via GNU Stow), and system preferences in a modular, role-based architecture.
+This repository automates the provisioning and configuration of a macOS development environment using **Ansible**. It manages Homebrew packages, dotfiles, and system preferences in a modular, role-based architecture.
 
 ## 🚀 Features
 
-- **Role-Based Architecture**: Organized into modular roles (`homebrew`, `dotfiles`, `macos`, etc.) for better maintainability.
+- **Role-Based Architecture**: Organized into modular roles (`homebrew`, `zsh`, `nvim`, `wezterm`, etc.) for better maintainability.
 - **Makefile Support**: Simple commands to check and apply configurations without typing long Ansible commands.
 - **Homebrew Management**: Automates installation of Formulae (CLI tools) and Casks (GUI applications).
-- **Dotfiles Management**: Integrated with GNU Stow to symlink configuration files (currently optional).
+- **Dotfiles Integration**: Configuration files are managed within each Ansible role and symlinked directly to `~/.config/`.
 
 ## 📋 Prerequisites
 
@@ -20,12 +20,11 @@ Before running the playbook, ensure you have **Ansible** installed on your machi
 ```
 
 ### 2. **Install Ansible**:
+
 ```bash
 brew install ansible
 
 ```
-
-
 
 ## 🛠️ Usage
 
@@ -66,16 +65,31 @@ To add or remove software, edit **`group_vars/all.yml`**:
 ### Enabling/Disabling Roles
 
 To control which tasks are run, edit **`local.yml`**.
-For example, if you want to enable the `dotfiles` role later, uncomment it here:
 
 ```yaml
   roles:
     - common
-    - homebrew
-    # - dotfiles  <-- Uncomment to enable
+    - zsh
+    - nvim
+    - wezterm
     # - macos     <-- Uncomment to enable
 
 ```
+
+## 📏 Zsh Configuration Convention
+
+Zsh configuration files are split and managed in `~/.config/zsh/conf.d/`. They are loaded in alphabetical order.
+We use a **numbering prefix** to ensure dependencies are loaded in the correct order.
+
+| Prefix | Category | Description | Examples |
+| --- | --- | --- | --- |
+| **00-09** | **Bootstrap** | Initialization required before anything else | `00-p10k.zsh` (Instant Prompt) |
+| **10-19** | **Zsh Core** | Basic shell behavior | `10-basics.zsh` (History, Bindkeys) |
+| **20-29** | **Environment** | Runtimes and PATH setup | `20-runtimes.zsh` (Node, Java, Go) |
+| **30-49** | **CLI Tools** | Common tools configurations | `30-tools.zsh`, `31-fzf.zsh` |
+| **50-79** | **Apps (Roles)** | App-specific aliases and integration | `50-wezterm.zsh`, `50-nvim.zsh` |
+| **80-89** | **Visuals** | Syntax highlighting and theming | `80-highlighting.zsh` |
+| **90-99** | **Local** | Secrets and local overrides | `99-local_secrets.zsh` |
 
 ## 📂 Directory Structure
 
@@ -88,18 +102,16 @@ For example, if you want to enable the `dotfiles` role later, uncomment it here:
 ├── group_vars/
 │   └── all.yml           # Global variables (Package lists, Repo URLs)
 └── roles/                # Task definitions by category
-    ├── common/           # Basic setup tasks
-    ├── homebrew/         # Installs Taps, Formulae, and Casks
-    ├── dotfiles/         # Clones repo and runs GNU Stow
-    ├── macos/            # macOS system preferences (Finder, Dock, etc.)
-    └── zsh/              # Shell configuration
+    ├── common/           # Common CLI tools & basic Zsh configs
+    ├── zsh/              # Zsh setup & Powerlevel10k
+    ├── nvim/             # Neovim setup & config files
+    ├── wezterm/          # WezTerm setup & config files
+    └── macos/            # macOS system preferences
 
 ```
 
 ## ⚠️ Notes
 
-* **Dotfiles**: The `dotfiles` role is designed to work with [GNU Stow](https://www.gnu.org/software/stow/). Ensure your dotfiles repository structure is compatible before enabling the role.
-
-```
+* **Monorepo Structure**: Configuration files (dotfiles) are located inside `roles/<role_name>/files/`. Ansible symlinks them to the target destination.
 
 ```
