@@ -15,7 +15,7 @@ Before running the playbook, ensure you have **Ansible** installed on your machi
 
 ### 1. **Install Homebrew** (if not already installed):
 ```bash
-   /bin/bash -c "$(curl -fsSL [https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh](https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh))"
+/bin/bash -c "$(curl -fsSL [https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh](https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh))"
 
 ```
 
@@ -99,7 +99,6 @@ For example, if you want to enable the `dotfiles` role later, uncomment it here:
 
 ## ⚠️ Notes
 
-* **Python Interpreter Warning**: You might see a warning `[WARNING]: Host 'localhost' is using the discovered Python interpreter...`. This is normal and can be safely ignored.
 * **Dotfiles**: The `dotfiles` role is designed to work with [GNU Stow](https://www.gnu.org/software/stow/). Ensure your dotfiles repository structure is compatible before enabling the role.
 
 ```
