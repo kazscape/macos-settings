@@ -53,7 +53,6 @@ homebrew_cask_apps:
   - miro
   - monitorcontrol
   - mysqlworkbench
-  - nikitabobko/tap/aerospace # Aerospaceロールを作るなら後で移動
   - notion
   - pgadmin4
   - pycharm-ce

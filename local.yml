@@ -12,6 +12,7 @@
     - nvim
     - wezterm
     - tmux
+    - aerospace
 
     # 3. Global Packages
     #    (Install global CLI tools and GUI apps from all.yml)
