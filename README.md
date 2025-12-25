@@ -62,7 +62,6 @@ To add or remove software, edit **`group_vars/all.yml`**:
 
 * **`homebrew_packages`**: List of CLI tools (e.g., `git`, `neovim`, `tree`).
 * **`homebrew_cask_apps`**: List of GUI applications (e.g., `google-chrome`, `iterm2`).
-* **`homebrew_taps`**: List of third-party repositories.
 
 ### Enabling/Disabling Roles
 
