@@ -1,9 +1,10 @@
 ---
 # 1. Install Packages
-- name: Install common packages
+- name: Install packages
   homebrew:
     name: "{{ role_vars.packages | default([]) }}"
     state: present
+  when: role_vars.packages is defined and role_vars.packages | length > 0
 
 # 2. Install fzf-git.sh (Manual Clone)
 - name: Install fzf-git.sh
@@ -20,7 +21,7 @@
     mode: "0755"
   loop: "{{ role_vars.config_dirs | default([]) }}"
 
-# 4. Create Symbolic Links
+# 4. Create Symbolic Links (Individual Link Rule)
 - name: Symlink configuration files
   file:
     src: "{{ role_path }}/files/{{ item.src }}"

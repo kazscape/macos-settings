@@ -9,7 +9,7 @@ role_vars:
   symlinks:
     - src: "wezterm"
       dest: ".config/wezterm"
-    - src: "50-wezterm.zsh"
+    - src: "wezterm-conf-d/50-wezterm.zsh"
       dest: ".config/zsh/conf.d/50-wezterm.zsh"
 
   # Directories that must exist before linking
