@@ -11,6 +11,7 @@
     #    (Installation and config deployment for specific tools)
     - git
     - vscode
+    - aws
     - nvim
     - wezterm
     - tmux

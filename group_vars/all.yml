@@ -12,7 +12,7 @@ dotfiles_repos:
 # --- Formulae (CLI Tools) ---
 homebrew_packages:
   - 1password-cli
-  - awscli
+
   - ffmpeg
   - ffmpegthumbnailer
   - hatch

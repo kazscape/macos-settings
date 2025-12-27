@@ -1,0 +1,13 @@
+---
+role_vars:
+  packages:
+    - awscli
+
+  config_dirs:
+    - .aws
+
+  symlinks:
+    - src: "config"
+      dest: ".aws/config"
+    - src: "aws.zsh"
+      dest: ".config/zsh/conf.d/50-aws.zsh"
