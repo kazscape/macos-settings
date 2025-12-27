@@ -36,4 +36,4 @@ fi
 autoload -Uz compinit && compinit
 
 # Added by Antigravity
-export PATH="/Users/kazuharu.yamauchi/.antigravity/antigravity/bin:$PATH"
+# export PATH="/Users/kazuharu.yamauchi/.antigravity/antigravity/bin:$PATH"

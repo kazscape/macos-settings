@@ -15,10 +15,6 @@ homebrew_packages:
   - awscli
   - ffmpeg
   - ffmpegthumbnailer
-  - gh
-  - git
-  - git-filter-repo
-  - git-gui
   - hatch
   - httpie
   - imagemagick
@@ -44,7 +40,7 @@ homebrew_cask_apps:
   - cron
   - dbeaver-community
   - docker
-  - git-credential-manager
+
   - intellij-idea
   - keyboardcleantool
   - keyclu

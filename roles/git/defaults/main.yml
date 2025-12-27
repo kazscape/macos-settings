@@ -1,0 +1,16 @@
+---
+role_vars:
+  packages:
+    - git
+    - gh
+    - git-filter-repo
+    - git-gui
+  
+  cask_apps:
+    - git-credential-manager
+
+  symlinks:
+    - src: ".gitconfig"
+      dest: ".gitconfig"
+    - src: ".gitignore_global"
+      dest: ".gitignore_global"
