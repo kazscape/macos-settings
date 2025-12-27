@@ -12,6 +12,7 @@
     - git
     - vscode
     - aws
+    - docker
     - nvim
     - wezterm
     - tmux

@@ -1,0 +1,4 @@
+---
+role_vars:
+  cask_apps:
+    - docker
