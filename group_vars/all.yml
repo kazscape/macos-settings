@@ -15,7 +15,7 @@ homebrew_packages:
 
   - ffmpeg
   - ffmpegthumbnailer
-  - hatch
+
   - httpie
   - imagemagick
   - im-select
@@ -35,7 +35,7 @@ homebrew_cask_apps:
   - bartender
   - brave-browser
   - chatgpt-atlas
-  - corretto@21
+
   - clickup
   - cron
   - dbeaver-community

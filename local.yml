@@ -13,6 +13,7 @@
     - vscode
     - aws
     - docker
+    - runtimes
     - nvim
     - wezterm
     - tmux

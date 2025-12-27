@@ -1,0 +1,16 @@
+---
+role_vars:
+  packages:
+    - hatch
+    - volta
+    - openjdk
+
+  cask_apps:
+    - corretto@21
+
+  symlinks:
+    - src: "runtimes.zsh"
+      dest: ".config/zsh/conf.d/20-runtimes.zsh"
+
+  config_dirs:
+    - .config/zsh/conf.d

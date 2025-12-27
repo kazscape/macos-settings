@@ -8,8 +8,7 @@ role_vars:
     - thefuck
     - zoxide
     - yazi
-    - volta
-    - openjdk
+
     - zsh-autosuggestions
     - zsh-syntax-highlighting
     - fd
@@ -18,8 +17,7 @@ role_vars:
   symlinks:
     - src: "zsh-conf-d/10-basics.zsh"
       dest: ".config/zsh/conf.d/10-basics.zsh"
-    - src: "zsh-conf-d/20-runtimes.zsh"
-      dest: ".config/zsh/conf.d/20-runtimes.zsh"
+
     - src: "zsh-conf-d/30-tools.zsh"
       dest: ".config/zsh/conf.d/30-tools.zsh"
     - src: "zsh-conf-d/31-fzf.zsh"
