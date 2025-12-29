@@ -1,2 +1,6 @@
 ---
 - import_tasks: ../../common/tasks/standard_role.yml
+
+- name: Rebuild bat cache to recognize custom themes
+  command: bat cache --build
+  changed_when: false
