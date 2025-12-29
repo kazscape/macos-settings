@@ -1,4 +1,16 @@
 ---
+- name: Ensure bat themes directory exists
+  file:
+    path: "{{ role_path }}/files/bat/themes"
+    state: directory
+    mode: "0755"
+
+- name: Download tokyonight_night theme for bat
+  get_url:
+    url: https://raw.githubusercontent.com/folke/tokyonight.nvim/main/extras/sublime/tokyonight_night.tmTheme
+    dest: "{{ role_path }}/files/bat/themes/tokyonight_night.tmTheme"
+    mode: "0644"
+
 - import_tasks: ../../common/tasks/standard_role.yml
 
 - name: Rebuild bat cache to recognize custom themes
