@@ -6,7 +6,6 @@ role_vars:
     - eza
     - thefuck
     - zoxide
-    - yazi
     - tlrc
 
     - zsh-autosuggestions

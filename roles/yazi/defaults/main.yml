@@ -1,0 +1,24 @@
+---
+role_vars:
+  # List of packages to install
+  packages:
+    - yazi
+    - ffmpegthumbnailer
+    - sevenzip
+    - jq
+    - poppler
+    - imagemagick
+    - font-symbols-only-nerd-font
+
+  # All symbolic links (both App config and Shell config)
+  symlinks:
+    - src: "yazi/yazi.toml"
+      dest: ".config/yazi/yazi.toml"
+    - src: "yazi/keymap.toml"
+      dest: ".config/yazi/keymap.toml"
+    - src: "yazi/theme.toml"
+      dest: ".config/yazi/theme.toml"
+
+  # Directories that must exist before linking
+  config_dirs:
+    - .config/yazi

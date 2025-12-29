@@ -1,0 +1,2 @@
+---
+- import_tasks: ../../common/tasks/standard_role.yml
