@@ -7,6 +7,7 @@ role_vars:
     - thefuck
     - zoxide
     - yazi
+    - tlrc
 
     - zsh-autosuggestions
     - zsh-syntax-highlighting
