@@ -3,7 +3,6 @@ role_vars:
   # List of packages to install
   packages:
     - fzf
-    - bat
     - eza
     - thefuck
     - zoxide

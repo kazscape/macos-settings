@@ -1,0 +1,14 @@
+---
+role_vars:
+  # List of packages to install
+  packages:
+    - bat
+
+  # Directories that must exist before linking
+  config_dirs:
+    - .config/bat/themes
+
+  # All symbolic links
+  symlinks:
+    - src: "bat/themes/tokyonight_night.tmTheme"
+      dest: ".config/bat/themes/tokyonight_night.tmTheme"
