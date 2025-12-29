@@ -10,7 +10,25 @@ This repository automates the provisioning and configuration of a macOS developm
 - **Dotfiles Integration**: Configuration files are managed within each Ansible role and symlinked directly to `~/.config/`.
 - **Automated Theme Management**: Automatically downloads themes from external sources (e.g., Tokyo Night theme for bat and git-delta).
 
-## 📋 Prerequisites
+## � Documentation
+
+### Keyboard Shortcuts & Cheatsheets
+
+**🌐 オンラインダッシュボード:** https://kazscape.github.io/macos-settings/
+
+**ローカル:** [HTMLダッシュボード](docs/cheatsheets/index.html) をブラウザで開いてブックマーク登録も便利です！
+
+Comprehensive cheatsheets for all CLI tools are available in the [docs/cheatsheets](docs/cheatsheets/) directory:
+
+- **[WezTerm](docs/cheatsheets/wezterm.md)** - Terminal emulator shortcuts
+- **[tmux](docs/cheatsheets/tmux.md)** - Terminal multiplexer keybindings
+- **[Neovim](docs/cheatsheets/nvim.md)** - Editor commands and plugins
+- **[Yazi](docs/cheatsheets/yazi.md)** - File manager navigation
+- **[AeroSpace](docs/cheatsheets/aerospace.md)** - Window manager controls
+
+See the [Cheatsheets README](docs/cheatsheets/README.md) for a complete overview.
+
+## �📋 Prerequisites
 
 Before running the playbook, ensure you have **Ansible** installed on your machine.
 
