@@ -1,2 +1,12 @@
 ---
 - import_tasks: ../../common/tasks/standard_role.yml
+
+- name: Install yazi official plugins
+  shell: |
+    ya pkg add yazi-rs/plugins:git
+    ya pkg add yazi-rs/plugins:full-border
+  args:
+    executable: /bin/zsh
+  register: ya_pkg_result
+  changed_when: "'Upgrading' in ya_pkg_result.stdout or 'Installing' in ya_pkg_result.stdout"
+  failed_when: false
