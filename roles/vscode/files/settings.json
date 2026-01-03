@@ -1,5 +1,6 @@
 {
     "redhat.telemetry.enabled": true,
     "editor.fontFamily": "'Guguru Sans Code Console 35NF'",
-    "github.copilot.nextEditSuggestions.enabled": true
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "http.systemCertificatesNode": true
 }
