@@ -26,7 +26,6 @@ homebrew_packages:
 # --- Casks (GUI Apps) ---
 homebrew_cask_apps:
   - 1password
-  - alfred
   - alt-tab
   - antigravity
   - appcleaner
