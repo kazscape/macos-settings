@@ -20,7 +20,6 @@
     - name: Stop kanata process
       ansible.builtin.shell: "sudo pkill -f kanata || true"
       changed_when: false
-      become: true
 
     # 3. Remove root-owned config directory if it exists
     - name: Check if kanata config directory exists with wrong permissions
@@ -29,11 +28,9 @@
       register: kanata_dir_stat
 
     - name: Remove root-owned kanata config directory
-      ansible.builtin.file:
-        path: "{{ kanata_config_dir }}"
-        state: absent
-      become: true
+      ansible.builtin.shell: "sudo rm -rf {{ kanata_config_dir }}"
       when: kanata_dir_stat.stat.exists and kanata_dir_stat.stat.uid == 0
+      changed_when: true
 
     # 4. Create config directory with correct permissions
     - name: Create kanata config directory
@@ -55,19 +52,40 @@
       register: kanata_bin_path
       changed_when: false
 
-    # 7. Create LaunchDaemon plist
-    - name: Create kanata LaunchDaemon plist
-      ansible.builtin.template:
-        src: kanata.plist.j2
-        dest: "{{ kanata_launchd_plist }}"
-        mode: "0644"
-      become: true
-      notify: Reload kanata LaunchDaemon
-
-    # 8. Load and start LaunchDaemon
-    - name: Load kanata LaunchDaemon
-      ansible.builtin.shell: "launchctl load -w {{ kanata_launchd_plist }}"
-      become: true
-      register: launchd_load
-      changed_when: launchd_load.rc == 0
-      failed_when: false
+    # 7. Display manual LaunchDaemon setup instructions
+    - name: Display LaunchDaemon setup instructions
+      ansible.builtin.debug:
+        msg: |
+          Kanata configuration is ready!
+          
+          To set up auto-start (requires sudo):
+          1. Run: cd {{ ansible_facts['user_dir'] }}/Workspace/settings/macos-settings
+          2. Run: make setup-kanata-daemon
+          
+          Or manually run:
+          sudo tee {{ kanata_launchd_plist }} <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>Label</key>
+              <string>{{ kanata_launchd_label }}</string>
+              <key>ProgramArguments</key>
+              <array>
+                  <string>{{ kanata_bin_path.stdout }}</string>
+                  <string>--cfg</string>
+                  <string>{{ kanata_config_file }}</string>
+              </array>
+              <key>RunAtLoad</key>
+              <true/>
+              <key>KeepAlive</key>
+              <true/>
+              <key>StandardOutPath</key>
+              <string>/tmp/kanata.out.log</string>
+              <key>StandardErrorPath</key>
+              <string>/tmp/kanata.err.log</string>
+          </dict>
+          </plist>
+          EOF
+          
+          sudo launchctl load -w {{ kanata_launchd_plist }}
