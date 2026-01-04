@@ -1,0 +1,50 @@
+---
+# Karabiner-Elements role tasks
+# Only runs on MacBook Pro (is_macbook_pro == true)
+
+- name: Skip karabiner role if not MacBook Pro
+  ansible.builtin.debug:
+    msg: "Skipping karabiner role - not a MacBook Pro"
+  when: not is_macbook_pro | default(false)
+
+- name: Run karabiner setup tasks
+  when: is_macbook_pro | default(false)
+  block:
+    # 1. Install Karabiner-Elements via Homebrew Cask
+    - name: Install Karabiner-Elements
+      community.general.homebrew_cask:
+        name: "{{ karabiner_cask }}"
+        state: present
+
+    # 2. Create config directory (Karabiner-Elements creates this automatically on first launch)
+    - name: Ensure Karabiner-Elements config directory exists
+      ansible.builtin.file:
+        path: "{{ karabiner_config_dir }}"
+        state: directory
+        mode: "0755"
+
+    # 3. Display manual setup instructions
+    - name: Display Karabiner-Elements setup instructions
+      ansible.builtin.debug:
+        msg: |
+          Karabiner-Elements has been installed!
+          
+          Manual setup required:
+          1. Launch Karabiner-Elements from Applications
+          2. Grant required permissions in System Settings:
+             - Privacy & Security > Input Monitoring
+             - Privacy & Security > Accessibility
+          3. Configure auto-start settings:
+             - System Settings > Privacy & Security > Login Items & Extensions
+             - In "Allow in the Background" section:
+               * Disable: karabiner_grabber (Karabiner-Elements)
+               * Disable: karabiner_observer (Karabiner-EventViewer)
+               * Keep enabled: karabiner_console_user_server (Karabiner CoreSystem)
+          4. Quit Karabiner-Elements from menu bar
+          5. Restart Mac
+          6. Verify Karabiner-Elements does NOT auto-start
+          
+          Configuration:
+          - Config files: {{ karabiner_config_dir }}
+          - Use Karabiner-Elements GUI for key mappings
+          - Launch manually when needed for keyboard customization
