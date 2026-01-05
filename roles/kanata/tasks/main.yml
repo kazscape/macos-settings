@@ -52,11 +52,25 @@
         dest: "{{ kanata_scripts_dir }}/kanata-stop"
         mode: "0755"
 
-    # 7. Display setup instructions
+    # 7. Setup LaunchDaemon for auto-start
+    - name: Create LaunchDaemon plist
+      ansible.builtin.template:
+        src: kanata.plist.j2
+        dest: "{{ kanata_launchd_plist }}"
+        mode: "0644"
+      become: true
+
+    - name: Load LaunchDaemon
+      ansible.builtin.shell: |
+        launchctl load -w "{{ kanata_launchd_plist }}" 2>&1 || true
+      become: true
+      changed_when: false
+
+    # 8. Display setup instructions
     - name: Display kanata setup instructions
       ansible.builtin.debug:
         msg: |
-          Kanata has been installed and configured!
+          Kanata has been installed and configured with auto-start!
           
           ⚠️  IMPORTANT - Manual Steps Required:
           
@@ -74,22 +88,24 @@
                 - Navigate to: /opt/homebrew/bin/kanata
                 - Add and enable the checkbox
           
-          2. Test kanata manually BEFORE enabling auto-start:
-             $ kanata-start
-             
-             Test CapsLock key (should work as Ctrl)
-             
-             If working correctly:
-             $ kanata-stop
+          2. After granting permissions, restart the LaunchDaemon:
+             $ sudo launchctl unload {{ kanata_launchd_plist }}
+             $ sudo launchctl load -w {{ kanata_launchd_plist }}
           
-          3. If testing is successful, set up auto-start:
-             See: docs/macbook.md for LaunchDaemon setup
+          3. Verify kanata is running:
+             $ ps aux | grep kanata | grep -v grep
           
-          Helper commands:
+          4. Check logs if needed:
+             $ tail -f /tmp/kanata.err.log
+          
+          Helper commands (for manual control):
           - kanata-start: Start kanata in foreground (for testing)
-          - kanata-stop: Stop kanata
+          - kanata-stop: Stop all kanata processes
           
-          Config file: {{ kanata_config_file }}
+          Auto-start configuration:
+          - LaunchDaemon: {{ kanata_launchd_plist }}
+          - Config file: {{ kanata_config_file }}
+          - Logs: /tmp/kanata.out.log, /tmp/kanata.err.log
           
-          ⚠️  Note: Karabiner-Elements and Kanata can coexist, but don't run
-          Karabiner-Elements' main app while Kanata is active.
+          ⚠️  Note: Kanata is configured to run only on MacBook Pro built-in keyboard.
+          External keyboards (e.g., Corne with VIA/Vial) are not affected.
