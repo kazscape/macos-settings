@@ -34,10 +34,10 @@
 ;; Adjust these values based on your typing speed
 (defvar
   ;; Tap time: Maximum time (ms) for a key press to be considered a tap
-  tap-time 200
+  tap-time 300
   ;; Hold time: Minimum time (ms) before hold action activates
   ;; Shorter value = faster hold activation
-  hold-time 200
+  hold-time 250
   
   ;; Keys on the left half of the keyboard
   ;; Used to trigger early tap when typing with the same hand
@@ -60,9 +60,6 @@
 ;; Source key definitions (all keys we want to remap)
 (defsrc
   caps  a    s    d    f    j    k    l    ;
-  brightnessdown brightnessup
-  previoussong playpause nextsong
-  mute volumedown volumeup
 )
 
 ;; Aliases for home row mods with basic tap-hold
@@ -82,10 +79,7 @@
   ; (tap-hold-release-keys $tap-time $hold-time ; rmet $right-hand-keys)  ;; ;: tap=;, hold=GUI/Cmd
 )
 
-;;lctl  @a   @s   @d   @f   @j   @k   @l   @;
-  brightnessdown brightnessup
-  previoussong playpause nextsong
-  mute volumedown volumeup
-  f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12
+;; Layer definitions
+(deflayer base
   lctl  @a   @s   @d   @f   @j   @k   @l   @;
 )
