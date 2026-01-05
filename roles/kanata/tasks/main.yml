@@ -7,9 +7,13 @@
   ansible.builtin.debug:
     msg: "Skipping kanata role - not a MacBook Pro"
   when: not is_macbook_pro | default(false)
+  tags:
+    - kanata
 
 - name: Run kanata setup tasks
   when: is_macbook_pro | default(false)
+  tags:
+    - kanata
   block:
     # 1. Install kanata via Homebrew
     - name: Install kanata

@@ -6,9 +6,13 @@
   ansible.builtin.debug:
     msg: "Skipping karabiner role - not a MacBook Pro"
   when: not is_macbook_pro | default(false)
+  tags:
+    - karabiner
 
 - name: Run karabiner setup tasks
   when: is_macbook_pro | default(false)
+  tags:
+    - karabiner
   block:
     # 1. Install Karabiner-Elements via Homebrew Cask
     - name: Install Karabiner-Elements
