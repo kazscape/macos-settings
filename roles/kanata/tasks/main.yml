@@ -1,0 +1,115 @@
+---
+# Kanata role tasks
+# Only runs on MacBook Pro (is_macbook_pro == true)
+# Kanata works with Karabiner-Elements DriverKit but requires manual permission setup
+
+- name: Skip kanata role if not MacBook Pro
+  ansible.builtin.debug:
+    msg: "Skipping kanata role - not a MacBook Pro"
+  when: not is_macbook_pro | default(false)
+  tags:
+    - kanata
+
+- name: Run kanata setup tasks
+  when: is_macbook_pro | default(false)
+  tags:
+    - kanata
+  block:
+    # 1. Install kanata via Homebrew
+    - name: Install kanata
+      community.general.homebrew:
+        name: "{{ kanata_package }}"
+        state: present
+
+    # 2. Create config directory with correct permissions
+    - name: Create kanata config directory
+      ansible.builtin.file:
+        path: "{{ kanata_config_dir }}"
+        state: directory
+        mode: "0755"
+
+    # 3. Deploy configuration file
+    - name: Copy kanata configuration file
+      ansible.builtin.copy:
+        src: kanata/kanata.kbd
+        dest: "{{ kanata_config_file }}"
+        mode: "0644"
+
+    # 4. Ensure scripts directory exists
+    - name: Create scripts directory
+      ansible.builtin.file:
+        path: "{{ kanata_scripts_dir }}"
+        state: directory
+        mode: "0755"
+
+    # 5. Create helper script for starting kanata
+    - name: Create kanata start script
+      ansible.builtin.template:
+        src: kanata_start.sh.j2
+        dest: "{{ kanata_scripts_dir }}/kanata-start"
+        mode: "0755"
+
+    # 6. Create helper script for stopping kanata
+    - name: Create kanata stop script
+      ansible.builtin.template:
+        src: kanata_stop.sh.j2
+        dest: "{{ kanata_scripts_dir }}/kanata-stop"
+        mode: "0755"
+
+    # 7. Setup LaunchDaemon for auto-start
+    - name: Create LaunchDaemon plist
+      ansible.builtin.template:
+        src: kanata.plist.j2
+        dest: "{{ kanata_launchd_plist }}"
+        mode: "0644"
+      become: true
+
+    - name: Load LaunchDaemon
+      ansible.builtin.shell: |
+        launchctl load -w "{{ kanata_launchd_plist }}" 2>&1 || true
+      become: true
+      changed_when: false
+
+    # 8. Display setup instructions
+    - name: Display kanata setup instructions
+      ansible.builtin.debug:
+        msg: |
+          Kanata has been installed and configured with auto-start!
+          
+          ⚠️  IMPORTANT - Manual Steps Required:
+          
+          1. Grant required permissions in System Settings:
+             
+             a) Input Monitoring (required to read keyboard input):
+                - System Settings > Privacy & Security > Input Monitoring
+                - Click the '+' button
+                - Navigate to: /opt/homebrew/bin/kanata
+                - Add and enable the checkbox
+             
+             b) Accessibility (required to send keyboard events):
+                - System Settings > Privacy & Security > Accessibility
+                - Click the '+' button
+                - Navigate to: /opt/homebrew/bin/kanata
+                - Add and enable the checkbox
+          
+          2. After granting permissions, restart the LaunchDaemon:
+             $ sudo launchctl unload {{ kanata_launchd_plist }}
+             $ sudo launchctl load -w {{ kanata_launchd_plist }}
+          
+          3. Verify kanata is running:
+             $ ps aux | grep kanata | grep -v grep
+          
+          4. Check logs if needed:
+             $ tail -f /tmp/kanata.err.log
+          
+          Helper commands (for manual control):
+          - kanata-start: Start kanata in foreground (for testing)
+          - kanata-stop: Stop all kanata processes
+          
+          Auto-start configuration:
+          - LaunchDaemon: {{ kanata_launchd_plist }}
+          - Config file: {{ kanata_config_file }}
+          - Logs: /tmp/kanata.out.log, /tmp/kanata.err.log
+          
+          ⚠️  Note: Kanata is configured to run only on MacBook Pro built-in keyboard.
+          External keyboards (e.g., Corne with VIA/Vial) are not affected.
