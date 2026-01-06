@@ -28,12 +28,13 @@
         state: directory
         mode: "0755"
 
-    # 3. Deploy configuration file
-    - name: Copy kanata configuration file
-      ansible.builtin.copy:
-        src: kanata/kanata.kbd
+    # 3. Deploy configuration file as symlink
+    - name: Create symlink for kanata configuration file
+      ansible.builtin.file:
+        src: "{{ role_path }}/files/kanata/kanata.kbd"
         dest: "{{ kanata_config_file }}"
-        mode: "0644"
+        state: link
+        force: yes
 
     # 4. Ensure scripts directory exists
     - name: Create scripts directory
