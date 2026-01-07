@@ -85,6 +85,9 @@
   
   ;; AltTab用: タップでAlt+Tab、長押しでAltを維持してスイッチャーを表示し続ける
   appsw (tap-hold 200 200 A-tab lalt)
+  
+  ;; Esc/Backspace: タップでBackspace、長押しでEsc
+  esc-bspc (tap-hold $tap-time $hold-time bspc esc)
 )
 
 ;; Layer definitions
@@ -94,7 +97,7 @@
     _       _       _       _       _       _       _       _       _       _       _       _       _       _
     @hyper  @a      @s      @d      @f      _       _       @j      @k      @l      @;      _       _
     _       _       _       _       _       _       _       _       _       _       _       _
-    @funct  _       _       esc             _                       ret     _
+    @funct  _       _       @esc-bspc       _                       ret     _
 )
 
 ;; --- nomods layer ---
@@ -104,7 +107,7 @@
     _       _       _       _       _       _       _       _       _       _       _       _       _       _
     @hyper  a       s       d       f       _       _       j       k       l       ;       _       _
     _       _       _       _       _       _       _       _       _       _       _       _
-    @funct  _       _       esc             _                       ret     _
+    @funct  _       _       @esc-bspc       _                       ret     _
 )
 
 (deffakekeys
@@ -118,7 +121,7 @@
     _       _       _       _       _       @appsw  _       _       _       _       _       _       _       _
     @hyper  @a      @s      @d      @f      _       lft     down    up      rght    _       _       _
     _       _       _       _       _       _       _       _       _       _       _       _
-    @funct  _       _       esc             _                       ret     _
+    @funct  _       _       @esc-bspc       _                       ret     _
 )
 
 ;; --- Function layer---
@@ -128,5 +131,5 @@
     _       _       _       _       _       _       _       _       _       _       _       _       _       _
     @hyper  @a      @s      @d      @f      _       lft     down    up      rght    _       _       _
     _       _       _       _       _       _       _       _       _       _       _       _
-    @funct  _       _       esc             _                       ret     _
+    @funct  _       _       @esc-bspc       _                       ret     _
 )
