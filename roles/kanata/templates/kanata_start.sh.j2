@@ -2,33 +2,46 @@
 # Kanata start helper script
 # Starts kanata via LaunchDaemon
 
-set -e
-
 CONFIG_FILE="{{ kanata_config_file }}"
 LAUNCHD_PLIST="{{ kanata_launchd_plist }}"
+LAUNCHD_LABEL="{{ kanata_launchd_label }}"
 
 echo "Starting Kanata..."
-echo "Config: $CONFIG_FILE"
 
-# Check if already running
-if pgrep -f "kanata" > /dev/null; then
+# Check if process is already running
+if pgrep -x kanata >/dev/null 2>&1; then
     echo "⚠️  Kanata is already running"
-    ps aux | grep kanata | grep -v grep
+    ps aux | grep -i kanata | grep -v grep | grep -v kanata-start
     exit 0
+fi
+
+# Check if LaunchDaemon is already loaded
+if sudo launchctl list 2>/dev/null | grep -q "$LAUNCHD_LABEL"; then
+    echo "LaunchDaemon is already loaded but process not running"
+    echo "Unloading and reloading..."
+    sudo launchctl unload "$LAUNCHD_PLIST" >/dev/null 2>&1 || true
+    sudo launchctl bootout system/"$LAUNCHD_LABEL" >/dev/null 2>&1 || true
+    sleep 1
 fi
 
 # Load the LaunchDaemon
 if [ -f "$LAUNCHD_PLIST" ]; then
     echo "Loading LaunchDaemon..."
     sudo launchctl load -w "$LAUNCHD_PLIST"
-    sleep 1
+    sleep 2
     
-    if pgrep -f "kanata" > /dev/null; then
-        echo "✅ Kanata started via LaunchDaemon"
-        ps aux | grep kanata | grep -v grep
+    if pgrep -x kanata >/dev/null 2>&1; then
+        echo "✅ Kanata started successfully"
+        ps aux | grep -i kanata | grep -v grep | grep -v kanata-start
     else
-        echo "❌ Failed to start Kanata. Check logs:"
-        echo "   tail -f /tmp/kanata.err.log"
+        echo "❌ Failed to start Kanata"
+        echo ""
+        echo "Check error log:"
+        echo "  tail -f /tmp/kanata.err.log"
+        echo ""
+        echo "Check permissions in System Settings:"
+        echo "  Privacy & Security > Input Monitoring"
+        echo "  Privacy & Security > Accessibility"
         exit 1
     fi
 else

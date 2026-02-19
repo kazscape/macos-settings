@@ -56,6 +56,13 @@
         dest: "{{ kanata_scripts_dir }}/kanata-stop"
         mode: "0755"
 
+    # 6.5. Create helper script for checking kanata status
+    - name: Create kanata status script
+      ansible.builtin.template:
+        src: kanata_status.sh.j2
+        dest: "{{ kanata_scripts_dir }}/kanata-status"
+        mode: "0755"
+
     # 7. Setup LaunchDaemon for auto-start
     - name: Create LaunchDaemon plist
       ansible.builtin.template:
@@ -63,12 +70,24 @@
         dest: "{{ kanata_launchd_plist }}"
         mode: "0644"
       become: true
+      ignore_errors: true
+      register: kanata_plist_result
 
     - name: Load LaunchDaemon
       ansible.builtin.shell: |
         launchctl load -w "{{ kanata_launchd_plist }}" 2>&1 || true
       become: true
       changed_when: false
+      ignore_errors: true
+      when: kanata_plist_result is succeeded
+
+    - name: Display LaunchDaemon warning if creation failed
+      ansible.builtin.debug:
+        msg: |
+          ⚠️  LaunchDaemon could not be created automatically.
+          Run with sudo password prompt: make apply-sudo
+          Or manually create LaunchDaemon after running this playbook.
+      when: kanata_plist_result is failed
 
     # 8. Display setup instructions
     - name: Display kanata setup instructions
@@ -92,9 +111,10 @@
                 - Navigate to: /opt/homebrew/bin/kanata
                 - Add and enable the checkbox
           
-          2. After granting permissions, restart the LaunchDaemon:
-             $ sudo launchctl unload {{ kanata_launchd_plist }}
-             $ sudo launchctl load -w {{ kanata_launchd_plist }}
+          2. After granting permissions, use the helper scripts:
+             $ kanata-start    # Start kanata via LaunchDaemon
+             $ kanata-stop     # Stop kanata
+             $ kanata-status   # Check kanata status
           
           3. Verify kanata is running:
              $ ps aux | grep kanata | grep -v grep
@@ -102,13 +122,9 @@
           4. Check logs if needed:
              $ tail -f /tmp/kanata.err.log
           
-          Helper commands (for manual control):
-          - kanata-start: Start kanata in foreground (for testing)
-          - kanata-stop: Stop all kanata processes
-          
-          Auto-start configuration:
+          Configuration files:
           - LaunchDaemon: {{ kanata_launchd_plist }}
-          - Config file: {{ kanata_config_file }}
+          - Config: {{ kanata_config_file }}
           - Logs: /tmp/kanata.out.log, /tmp/kanata.err.log
           
           ⚠️  Note: Kanata is configured to run only on MacBook Pro built-in keyboard.

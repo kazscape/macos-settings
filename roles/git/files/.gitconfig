@@ -13,6 +13,8 @@
 	rebase = false
 [credential]
 	helper = manager
+	helper = 
+	helper = /usr/local/share/gcm-core/git-credential-manager
 
 [interactive]
 	diffFilter = delta --color-only
@@ -27,3 +29,5 @@
 
 [diff]
 	colorMoved = default
+[credential "https://dev.azure.com"]
+	useHttpPath = true

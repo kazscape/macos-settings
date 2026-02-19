@@ -2,22 +2,68 @@
 # Kanata stop helper script
 # Stops kanata LaunchDaemon and processes
 
-set -e
-
 LAUNCHD_PLIST="{{ kanata_launchd_plist }}"
+LAUNCHD_LABEL="{{ kanata_launchd_label }}"
 
 echo "Stopping Kanata..."
 
-# First, unload the LaunchDaemon to prevent auto-restart
+# Check LaunchDaemon status before stopping
+DAEMON_STATUS=$(sudo launchctl list 2>/dev/null | grep -i kanata || echo "")
+if [ -n "$DAEMON_STATUS" ]; then
+    echo "LaunchDaemon is loaded, unloading..."
+else
+    echo "LaunchDaemon is not loaded"
+fi
+
+# First, MUST disable and unload the LaunchDaemon BEFORE killing processes
+# This is critical because KeepAlive=true will restart the process immediately
 if [ -f "$LAUNCHD_PLIST" ]; then
-    echo "Unloading LaunchDaemon..."
-    sudo launchctl unload "$LAUNCHD_PLIST" 2>/dev/null || true
-fi
-
-# Stop any remaining kanata processes
-if pgrep -f "kanata" > /dev/null; then
-    sudo pkill -f "kanata"
+    # Try unload multiple times with different methods (suppress all output)
+    sudo launchctl unload -w "$LAUNCHD_PLIST" >/dev/null 2>&1 || true
     sleep 1
+    sudo launchctl bootout system/"$LAUNCHD_LABEL" >/dev/null 2>&1 || true
+    sleep 1
+    
+    # Force kill the LaunchDaemon service if still loaded
+    if sudo launchctl list 2>/dev/null | grep -q "$LAUNCHD_LABEL"; then
+        sudo launchctl remove "$LAUNCHD_LABEL" >/dev/null 2>&1 || true
+        sleep 1
+    fi
 fi
 
-echo "✅ Kanata stopped (LaunchDaemon unloaded)"
+# Verify LaunchDaemon is completely unloaded
+if sudo launchctl list 2>/dev/null | grep -q "$LAUNCHD_LABEL"; then
+    echo ""
+    echo "⚠️  ERROR: LaunchDaemon is still loaded!"
+    echo "KeepAlive will restart processes. Manual intervention required:"
+    echo "  sudo launchctl unload -w $LAUNCHD_PLIST"
+    echo "  sudo launchctl remove $LAUNCHD_LABEL"
+    exit 1
+fi
+
+# Now kill all kanata processes (they won't restart anymore)
+for i in {1..3}; do
+    KANATA_PIDS=$(pgrep -x kanata 2>/dev/null || true)
+    if [ -n "$KANATA_PIDS" ]; then
+        if [ $i -eq 1 ]; then
+            echo "Killing kanata processes..."
+        fi
+        echo "$KANATA_PIDS" | xargs sudo kill -9 >/dev/null 2>&1 || true
+        sleep 1
+    else
+        break
+    fi
+done
+
+# Final verification
+if pgrep -x kanata >/dev/null 2>&1; then
+    echo ""
+    echo "⚠️  ERROR: Kanata processes are still running!"
+    echo "Please check LaunchDaemon status and run manually:"
+    echo "  sudo launchctl list | grep kanata"
+    echo "  sudo pkill -9 kanata"
+    ps aux | grep -i kanata | grep -v grep
+    exit 1
+else
+    echo "✅ Kanata stopped successfully"
+fi

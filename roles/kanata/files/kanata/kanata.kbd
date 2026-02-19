@@ -1,135 +1,177 @@
-;; Kanata Configuration
-;; MacBook Pro Internal Keyboard with Homerow Mods (GACS Layout)
-;; 
-;; Features:
-;; - CapsLock → Ctrl
-;; - Home Row Mods (GACS): A=GUI, S=Alt, D=Ctrl, F=Shift | J=Shift, K=Ctrl, L=Alt, ;=GUI
-;; - tap-hold-tap-keys: Optimized for fast typing, prevents accidental modifier triggers
+;; kanata.kbd
+;; Target environment:
+;; - macOS
+;; - Apple Internal Keyboard + HHKB Studio
+;; - GACS Home Row Mods
+;; - IME switch: Ctrl + Space (must remain stable)
+;;
+;; Design goals:
+;; - Reduce accidental modifier activation during typing
+;; - Preserve reliable Ctrl+Space for IME switching
+;; - Optimize same-hand rolling behavior (home row mods)
+;; - Avoid fake keys for better macOS + IME stability
 
-;; Configuration section
-;; Only apply to MacBook Pro built-in keyboard, exclude external keyboards (e.g., Corne)
 (defcfg
-;; Process unmapped keys: yes allows better home row mods behavior
-  process-unmapped-keys yes
-
-  ;; macOS device name filtering
-  ;; Include only Apple Internal Keyboard (MacBook Pro built-in keyboard) and HHKB Studio
-  ;; This prevents Kanata from intercepting external keyboards like Corne with VIA/Vial
+  ;; Restrict kanata to intercept only specific keyboard devices on macOS.
+  ;; Device names must match exactly (see: `kanata --list-devices`).
   macos-dev-names-include (
     "Apple Internal Keyboard / Trackpad"
     "HHKB-Studio1"
   )
+
+  ;; Process keys not defined in defsrc to ensure consistent tap-hold behavior
+  ;; across different keyboards (internal + HHKB).
+  process-unmapped-keys yes
 )
 
-;; Source key definitions (all keys we want to remap)
+;; =========================
+;; Physical source layout (US ANSI-like)
+;; Keep this generic so it works across multiple keyboards.
+;; =========================
 (defsrc
-    esc     f1      f2      f3      f4      f5      f6      f7      f8      f9      f10     f11     f12      
-            1       2       3       4       5       6       7       8       9       0       -       =       bspc
-    tab     q       w       e       r       t       y       u       i       o       p       [       ]       \
-    caps    a       s       d       f       g       h       j       k       l       ;       apo     ret
-    lsft    z       x       c       v       b       n       m       ,       .       /       rsft
-    fn      lctl    lalt    lmet            spc                     rmet    ralt
+  esc    f1    f2    f3    f4    f5    f6    f7    f8    f9    f10   f11   f12
+         1     2     3     4     5     6     7     8     9     0     -     =     bspc
+  tab    q     w     e     r     t     y     u     i     o     p     [     ]     \
+  caps   a     s     d     f     g     h     j     k     l     ;     apo   ret
+  lsft   z     x     c     v     b     n     m     ,     .     /     rsft
+         lctl  lalt  lmet        spc               rmet  ralt
 )
 
-;; Variables for tap-hold timing
-;; Adjust these values based on your typing speed
+;; =========================
+;; Timing configuration (in milliseconds)
+;; tap-time: maximum duration to be considered a tap
+;; hold-time: minimum duration before hold action is activated
+;; Shorter hold-time = faster modifier activation
+;; =========================
 (defvar
-  ;; Tap time: Maximum time (ms) for a key press to be considered a tap
-  tap-time    200
-  ;; Hold time: Minimum time (ms) before hold action activates
-  ;; Shorter value = faster hold activation
-  hold-time   200
-  double-tap-time   300
+  tap-time 250
+  hold-time 220
+  double-tap-time 300
+)
 
-  ;; Keys on the left half of the keyboard
-  ;; Used to trigger early tap when typing with the same hand
-  ;; Excludes home row mod keys themselves (a s d f) to allow hold activation
+;; =========================
+;; Tap trigger key sets
+;;
+;; Purpose:
+;; These key lists are used by tap-hold-release-keys to trigger early TAP
+;; when typing with the same hand (same-hand rolling).
+;;
+;; Important design choices:
+;; - Home row mod keys themselves (a s d f / j k l ;) are EXCLUDED
+;;   to avoid suppressing intentional hold activation.
+;; - Space is excluded only for Ctrl mods to preserve Ctrl+Space (IME).
+;; =========================
+(defvar
+  ;; Keys on the left side of the keyboard.
+  ;; Used to favor TAP when rolling with the left hand.
+  ;; Excludes home row mod keys (a s d f).
   left-hand-keys (
-    q w e r t
-    a s d f g
+    q w e r t g
     z x c v b
+    spc ret bspc
   )
-    
-  ;; Keys on the right half of the keyboard
-  ;; Excludes home row mod keys themselves (j k l ;) to allow hold activation
+
+  ;; Keys on the right side of the keyboard.
+  ;; Used to favor TAP when rolling with the right hand.
+  ;; Excludes home row mod keys (j k l ;).
   right-hand-keys (
-    y u i o p
-    h j k l ;
+    y u i o p h
     n m , . /
+    spc ret bspc
+  )
+
+  ;; Left-hand trigger keys for Ctrl mods.
+  ;; Space is intentionally excluded to ensure stable Ctrl+Space (IME switching).
+  left-hand-keys-no-spc (
+    q w e r t g
+    z x c v b
+    ret bspc
+  )
+
+  ;; Right-hand trigger keys for Ctrl mods.
+  ;; Space is excluded for the same reason as above.
+  right-hand-keys-no-spc (
+    y u i o p h
+    n m , . /
+    ret bspc
   )
 )
 
-;; Aliases for home row mods with basic tap-hold
-;; Simple and reliable, good starting point
+;; =========================
+;; Home Row Mods (GACS layout)
+;;
+;; Left hand:
+;; A = Ctrl, S = Alt, D = Cmd, F = Shift
+;;
+;; Right hand (mirrored):
+;; J = Shift, K = Cmd, L = Alt, ; = Ctrl
+;;
+;; Implementation:
+;; - Uses tap-hold-tap-keys
+;; - Early TAP is triggered by same-hand keys
+;; - Hold always waits full hold-time (no early hold on other keys)
+;; - Ctrl mods use no-spc sets to protect Ctrl+Space
+;; =========================
 (defalias
-  tap (multi
-    (layer-switch nomods)
-    (on-idle-fakekey to-base tap 20)
-  )
+  ;; Left hand home row mods
+  A_CTL (tap-hold-tap-keys $tap-time $hold-time a lctl $left-hand-keys-no-spc)
+  S_ALT (tap-hold-tap-keys $tap-time $hold-time s lalt $left-hand-keys)
+  D_CMD (tap-hold-tap-keys $tap-time $hold-time d lmet $left-hand-keys)
+  F_SFT (tap-hold-tap-keys $tap-time $hold-time f lsft $left-hand-keys)
 
-  ;; Left hand home row mods (GACS)
-  a (tap-hold-release-keys $tap-time $hold-time (multi a @tap) lctl $left-hand-keys)   ;; A: tap=a, hold=Ctrl
-  s (tap-hold-release-keys $tap-time $hold-time (multi s @tap) lalt $left-hand-keys)   ;; S: tap=s, hold=Alt
-  d (tap-hold-release-keys $tap-time $hold-time (multi d @tap) lmet $left-hand-keys)   ;; D: tap=d, hold=GUI/Cmd
-  f (tap-hold-release-keys $tap-time $hold-time (multi f @tap) lsft $left-hand-keys)   ;; F: tap=f, hold=Shift
-  
-  ;; Right hand home row mods (GACS mirrored)
-  j (tap-hold-release-keys $tap-time $hold-time (multi j @tap) rsft $right-hand-keys)  ;; J: tap=j, hold=Shift
-  k (tap-hold-release-keys $tap-time $hold-time (multi k @tap) rmet $right-hand-keys)  ;; K: tap=k, hold=GUI/Cmd
-  l (tap-hold-release-keys $tap-time $hold-time (multi l @tap) ralt $right-hand-keys)  ;; L: tap=l, hold=Alt
-  ; (tap-hold-release-keys $tap-time $hold-time (multi ; @tap) rctl $right-hand-keys)  ;; ;: tap=;, hold=Ctrl
+  ;; Right hand home row mods (mirrored GACS)
+  J_SFT (tap-hold-tap-keys $tap-time $hold-time j rsft $right-hand-keys)
+  K_CMD (tap-hold-tap-keys $tap-time $hold-time k rmet $right-hand-keys)
+  L_ALT (tap-hold-tap-keys $tap-time $hold-time l ralt $right-hand-keys)
+  SEM_CTL (tap-hold-tap-keys $tap-time $hold-time ; rctl $right-hand-keys-no-spc)
 
+  ;; Layer keys
   hyper (layer-while-held hyper)
-  ;; funct (layer-while-held function)
-  funct (tap-dance $double-tap-time (lsft (layer-while-held function)))   ;; タップor長押し→Left shift, 2回タップ+長押し→Functionレイヤー
+  funct (tap-dance $double-tap-time (lsft (layer-while-held function)))
   
-  ;; AltTab用: タップでAlt+Tab、長押しでAltを維持してスイッチャーを表示し続ける
-  appsw (tap-hold 200 200 A-tab lalt)
-  
-  ;; Esc/Backspace: タップでBackspace、長押しでEsc
+  ;; Esc/Backspace: tap=Backspace, hold=Esc
   esc-bspc (tap-hold $tap-time $hold-time bspc esc)
 )
 
-;; Layer definitions
+;; =========================
+;; Base layer
+;; Applies GACS home row mods while keeping standard typing behavior.
+;; =========================
 (deflayer base
-    _       _       _       _       _       _       _       _       _       _       _       _       _
-            _       _       _       _       _       _       _       _       _       _       _       _       _
-    _       _       _       _       _       _       _       _       _       _       _       _       _       _
-    @hyper  @a      @s      @d      @f      _       _       @j      @k      @l      @;      _       _
-    @funct  _       _       _       _       _       _       _       _       _       _       @funct
-    _       @hyper  _       @esc-bspc       _                       ret     _
+  esc      f1      f2      f3      f4      f5      f6      f7      f8      f9      f10     f11     f12
+           1       2       3       4       5       6       7       8       9       0       -       =       bspc
+  tab      q       w       e       r       t       y       u       i       o       p       [       ]       \
+  @hyper   @A_CTL  @S_ALT  @D_CMD  @F_SFT  g       h       @J_SFT  @K_CMD  @L_ALT  @SEM_CTL apo    ret
+  @funct   z       x       c       v       b       n       m       ,       .       /       @funct
+           @hyper  lalt    @esc-bspc       spc                     rmet    ralt
 )
 
-;; --- nomods layer ---
-(deflayer nomods
-    _       _       _       _       _       _       _       _       _       _       _       _       _
-            _       _       _       _       _       _       _       _       _       _       _       _       _
-    _       _       _       _       _       _       _       _       _       _       _       _       _       _
-    @hyper  a       s       d       f       _       _       j       k       l       ;       _       _
-    @funct  _       _       _       _       _       _       _       _       _       _       @funct
-    _       @hyper  _       @esc-bspc       _                       ret     _
-)
-
-(deffakekeys
-    to-base (layer-switch base)
-)
-
-;; --- Hyper layer---
+;; =========================
+;; Hyper layer
+;; Activated by holding CapsLock (@hyper).
+;; Provides navigation (arrows), AltTab, and keeps home row mods active.
+;; =========================
 (deflayer hyper
-    _       _       _       _       _       _       _       _       _       _       _       _       _
-            _       _       _       _       _       _       _       _       _       _       _       _       _
-    _       _       _       _       _       @appsw  _       _       _       _       _       _       _       _
-    @hyper  @a      @s      @d      @f      _       lft     down    up      rght    _       _       _
-    @funct  _       _       _       _       _       _       _       _       _       _       @funct
-    _       @hyper  _       @esc-bspc       _                       ret     _
+  _        _       _       _       _       _       _       _       _       _       _       _       _
+           f1      f2      f3      f4      f5      f6      f7      f8      f9      f10     f11     f12     _
+  _        _       _       _       _       _       _       _       _       _       _       _       _       _
+  @hyper   @A_CTL  @S_ALT  @D_CMD  @F_SFT  _       lft     down    up      rght    _       _       _
+  @funct   _       _       _       _       _       _       _       _       _       _       @funct
+           @hyper  lalt    @esc-bspc       spc                     ret     _
 )
 
-;; --- Function layer---
+;; =========================
+;; Function layer
+;; Activated by holding left/right Shift (@funct).
+;; Double-tap + hold = function layer, single tap/hold = Shift.
+;; Provides F-keys, media controls, and numpad.
+;; =========================
 (deflayer function
-    _       brdn    brup    mctl    sls     dtn     dnd     prev    pp      next    mute    voldwn  volu
-            f1      f2      f3      f4      f5      f6      f7      f8      f9      f10     f11     f12     _
-    _       _       _       _       _       _       _       7       8       9       _       _       _       _
-    @hyper  @a      @s      @d      @f      _       _       4       5       6       _       _       _
-    @funct  _       _       _       _       _       0       1       2       3       _       @funct
-    _       @hyper  _       @esc-bspc       _                       ret     _
+  _        brdn    brup    mctl    sls     dtn     dnd     prev    pp      next    mute    voldwn  volu
+           f1      f2      f3      f4      f5      f6      f7      f8      f9      f10     f11     f12     _
+  _        _       _       _       _       _       _       7       8       9       _       _       _       _
+  @hyper   @A_CTL  @S_ALT  @D_CMD  @F_SFT  _       _       4       5       6       _       _       _
+  @funct   _       _       _       _       _       0       1       2       3       _       @funct
+           @hyper  lalt    @esc-bspc       _                       ret     _
 )
+

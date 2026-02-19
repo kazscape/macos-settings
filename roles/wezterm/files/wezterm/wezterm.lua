@@ -63,7 +63,7 @@ config.audible_bell = "Disabled"
 
 -- Function to switch input source to alphanumeric
 local function switch_to_abc()
-	wezterm.background_child_process({ "/opt/homebrew/bin/im-select", "jp.monokakido.inputmethod.Kawasemi4.Roman" })
+	wezterm.background_child_process({ "/opt/homebrew/bin/im-select", "dev.ensan.inputmethod.azooKeyMac.Roman" })
 end
 
 -- Switch input source to alphanumeric on startup

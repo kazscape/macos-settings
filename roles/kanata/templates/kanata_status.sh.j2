@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Kanata status helper script
+# Shows current kanata status
+
+LAUNCHD_PLIST="{{ kanata_launchd_plist }}"
+LAUNCHD_LABEL="{{ kanata_launchd_label }}"
+
+echo "=== Kanata Status ==="
+echo
+
+# Check LaunchDaemon status
+echo "LaunchDaemon:"
+DAEMON_INFO=$(sudo launchctl list 2>/dev/null | grep "$LAUNCHD_LABEL" || true)
+if [ -n "$DAEMON_INFO" ]; then
+    echo "  ✅ Loaded"
+    echo "     $DAEMON_INFO"
+else
+    echo "  ❌ Not loaded"
+fi
+echo
+
+# Check process status
+echo "Process:"
+if pgrep -x kanata >/dev/null 2>&1; then
+    echo "  ✅ Running"
+    ps aux | grep -i kanata | grep -v grep | grep -v kanata-status | sed 's/^/     /'
+else
+    echo "  ❌ Not running"
+fi
+echo
+
+# Check config file
+echo "Config:"
+CONFIG_FILE="{{ kanata_config_file }}"
+if [ -f "$CONFIG_FILE" ]; then
+    echo "  ✅ $CONFIG_FILE"
+else
+    echo "  ❌ Not found: $CONFIG_FILE"
+fi
+echo
+
+# Check plist file
+echo "LaunchDaemon plist:"
+if [ -f "$LAUNCHD_PLIST" ]; then
+    echo "  ✅ $LAUNCHD_PLIST"
+else
+    echo "  ❌ Not found: $LAUNCHD_PLIST"
+fi
+echo
+
+# Check logs
+ERROR_LOG="/tmp/kanata.err.log"
+if [ -f "$ERROR_LOG" ] && [ -s "$ERROR_LOG" ]; then
+    echo "Recent errors (last 3 lines):"
+    tail -3 "$ERROR_LOG" | sed 's/^/  /'
+else
+    echo "Error log: (empty or not found)"
+fi
