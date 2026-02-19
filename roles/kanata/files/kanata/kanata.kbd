@@ -53,29 +53,29 @@
 ;; Tap trigger key sets
 ;;
 ;; Purpose:
-;; These key lists are used by tap-hold-release-keys to trigger early TAP
+;; These key lists are used by tap-hold-* variants to trigger early TAP
 ;; when typing with the same hand (same-hand rolling).
 ;;
 ;; Important design choices:
-;; - Home row mod keys themselves (a s d f / j k l ;) are EXCLUDED
-;;   to avoid suppressing intentional hold activation.
+;; - Home row mod keys themselves (a s d f / j k l ;) are INCLUDED
+;;   to strongly favor TAP during same-hand rolling.
 ;; - Space is excluded only for Ctrl mods to preserve Ctrl+Space (IME).
 ;; =========================
 (defvar
   ;; Keys on the left side of the keyboard.
   ;; Used to favor TAP when rolling with the left hand.
-  ;; Excludes home row mod keys (a s d f).
+  ;; Includes home row mod keys (a s d f).
   left-hand-keys (
-    q w e r t g
+    q w e r t a s d f g
     z x c v b
     spc ret bspc
   )
 
   ;; Keys on the right side of the keyboard.
   ;; Used to favor TAP when rolling with the right hand.
-  ;; Excludes home row mod keys (j k l ;).
+  ;; Includes home row mod keys (j k l ;).
   right-hand-keys (
-    y u i o p h
+    y u i o p j k l ; h
     n m , . /
     spc ret bspc
   )
@@ -83,7 +83,7 @@
   ;; Left-hand trigger keys for Ctrl mods.
   ;; Space is intentionally excluded to ensure stable Ctrl+Space (IME switching).
   left-hand-keys-no-spc (
-    q w e r t g
+    q w e r t a s d f g
     z x c v b
     ret bspc
   )
@@ -91,7 +91,7 @@
   ;; Right-hand trigger keys for Ctrl mods.
   ;; Space is excluded for the same reason as above.
   right-hand-keys-no-spc (
-    y u i o p h
+    y u i o p j k l ; h
     n m , . /
     ret bspc
   )
