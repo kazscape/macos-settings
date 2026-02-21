@@ -17,6 +17,7 @@
   macos-dev-names-include (
     "Apple Internal Keyboard / Trackpad"
     "HHKB-Studio1"
+    "USB Receiver"
   )
 
   ;; Process keys not defined in defsrc to ensure consistent tap-hold behavior
@@ -45,7 +46,7 @@
 ;; =========================
 (defvar
   tap-time 250
-  hold-time 220
+  hold-time 280
   double-tap-time 300
 )
 
@@ -68,6 +69,16 @@
   left-hand-keys (
     q w e r t a s d f g
     z x c v b
+    spc ret bspc
+  )
+
+  ;; Left-hand trigger keys tuned for romaji typing.
+  ;; Include right-hand vowels so sequences like "su" don't accidentally
+  ;; become Option+u (dead key) when S is a home-row Alt.
+  left-hand-keys-romaji (
+    q w e r t a s d f g
+    z x c v b
+    u i o
     spc ret bspc
   )
 
@@ -98,13 +109,24 @@
 )
 
 ;; =========================
+;; Virtual keys (internal state)
+;;
+;; Used to mark a short window after IME toggle (Ctrl+Space)
+;; so home-row Ctrl keys won't emit their tap character.
+;; =========================
+(defvirtualkeys
+  ime-chord nop0
+  chord-suppress nop1
+)
+
+;; =========================
 ;; Home Row Mods (GACS layout)
 ;;
 ;; Left hand:
-;; A = Ctrl, S = Alt, D = Cmd, F = Shift
+;; A = Gui, S = Alt, D = Ctrl, F = Shift
 ;;
 ;; Right hand (mirrored):
-;; J = Shift, K = Cmd, L = Alt, ; = Ctrl
+;; J = Shift, K = Ctrl, L = Alt, ; = Gui
 ;;
 ;; Implementation:
 ;; - Uses tap-hold-tap-keys
@@ -113,17 +135,63 @@
 ;; - Ctrl mods use no-spc sets to protect Ctrl+Space
 ;; =========================
 (defalias
-  ;; Left hand home row mods
-  A_CTL (tap-hold-tap-keys $tap-time $hold-time a lctl $left-hand-keys-no-spc)
-  S_ALT (tap-hold-tap-keys $tap-time $hold-time s lalt $left-hand-keys)
-  D_CMD (tap-hold-tap-keys $tap-time $hold-time d lmet $left-hand-keys)
-  F_SFT (tap-hold-tap-keys $tap-time $hold-time f lsft $left-hand-keys)
+  ;; Left hand home row mods (GACS)
+  A_GUI (tap-hold-tap-keys $tap-time $hold-time a lmet $left-hand-keys)
+  S_ALT (tap-hold-tap-keys $tap-time $hold-time
+    (switch
+      ((input virtual chord-suppress)) XX break
+      () s break
+    )
+    lalt
+    $left-hand-keys-romaji
+  )
+
+  ;; Ctrl mods use tap-hold-release-keys so Ctrl can activate early when used
+  ;; as a chord (e.g. Ctrl+Space for IME switching), while still favoring TAP
+  ;; during same-hand rolling via the tap-keys list.
+  D_CTL (tap-hold-release-keys $tap-time $hold-time
+    (switch
+      ((input virtual ime-chord)) XX break
+      () d break
+    )
+    lctl
+    $left-hand-keys-no-spc
+  )
+  F_SFT (tap-hold-tap-keys $tap-time $hold-time
+    (switch
+      ((input virtual chord-suppress)) XX break
+      () f break
+    )
+    lsft
+    $left-hand-keys
+  )
 
   ;; Right hand home row mods (mirrored GACS)
-  J_SFT (tap-hold-tap-keys $tap-time $hold-time j rsft $right-hand-keys)
-  K_CMD (tap-hold-tap-keys $tap-time $hold-time k rmet $right-hand-keys)
-  L_ALT (tap-hold-tap-keys $tap-time $hold-time l ralt $right-hand-keys)
-  SEM_CTL (tap-hold-tap-keys $tap-time $hold-time ; rctl $right-hand-keys-no-spc)
+  J_SFT (tap-hold-tap-keys $tap-time $hold-time
+    (switch
+      ((input virtual chord-suppress)) XX break
+      () j break
+    )
+    rsft
+    $right-hand-keys
+  )
+  K_CTL (tap-hold-release-keys $tap-time $hold-time
+    (switch
+      ((input virtual ime-chord)) XX break
+      () k break
+    )
+    rctl
+    $right-hand-keys-no-spc
+  )
+  L_ALT (tap-hold-tap-keys $tap-time $hold-time
+    (switch
+      ((input virtual chord-suppress)) XX break
+      () l break
+    )
+    ralt
+    $right-hand-keys
+  )
+  SEM_GUI (tap-hold-tap-keys $tap-time $hold-time ; rmet $right-hand-keys)
 
   ;; Layer keys
   hyper (layer-while-held hyper)
@@ -131,6 +199,32 @@
   
   ;; Esc/Backspace: tap=Backspace, hold=Esc
   esc-bspc (tap-hold $tap-time $hold-time bspc esc)
+
+  ;; IME switch stability:
+  ;; If Space is pressed while the physical D or K key is still held,
+  ;; force Ctrl+Space regardless of whether the home-row Ctrl has already
+  ;; resolved to hold. This makes very fast Ctrl+Space reliable.
+  spc-ime (switch
+    ((input real d)) (multi (hold-for-duration 700 ime-chord) lctl spc) break
+    ((input real k)) (multi (hold-for-duration 700 ime-chord) rctl spc) break
+    ((input real s)) (multi (hold-for-duration 250 chord-suppress) lalt spc) break
+    ((input real l)) (multi (hold-for-duration 250 chord-suppress) ralt spc) break
+    () spc break
+  )
+
+  ;; Alt+Tab stability when using home-row Alt.
+  tab-app (switch
+    ((input real s)) (multi (hold-for-duration 250 chord-suppress) lalt tab) break
+    ((input real l)) (multi (hold-for-duration 250 chord-suppress) ralt tab) break
+    () tab break
+  )
+
+  ;; Shift+Return stability when using home-row Shift.
+  ret-sft (switch
+    ((input real f)) (multi (hold-for-duration 250 chord-suppress) lsft ret) break
+    ((input real j)) (multi (hold-for-duration 250 chord-suppress) rsft ret) break
+    () ret break
+  )
 )
 
 ;; =========================
@@ -140,10 +234,10 @@
 (deflayer base
   esc      f1      f2      f3      f4      f5      f6      f7      f8      f9      f10     f11     f12
            1       2       3       4       5       6       7       8       9       0       -       =       bspc
-  tab      q       w       e       r       t       y       u       i       o       p       [       ]       \
-  @hyper   @A_CTL  @S_ALT  @D_CMD  @F_SFT  g       h       @J_SFT  @K_CMD  @L_ALT  @SEM_CTL apo    ret
+  @tab-app q       w       e       r       t       y       u       i       o       p       [       ]       \
+  @hyper   @A_GUI  @S_ALT  @D_CTL  @F_SFT  g       h       @J_SFT  @K_CTL  @L_ALT  @SEM_GUI apo    @ret-sft
   @funct   z       x       c       v       b       n       m       ,       .       /       @funct
-           @hyper  lalt    @esc-bspc       spc                     rmet    ralt
+           @hyper  lalt    @esc-bspc       @spc-ime                rmet    ralt
 )
 
 ;; =========================
@@ -155,9 +249,9 @@
   _        _       _       _       _       _       _       _       _       _       _       _       _
            f1      f2      f3      f4      f5      f6      f7      f8      f9      f10     f11     f12     _
   _        _       _       _       _       _       _       _       _       _       _       _       _       _
-  @hyper   @A_CTL  @S_ALT  @D_CMD  @F_SFT  _       lft     down    up      rght    _       _       _
+  @hyper   @A_GUI  @S_ALT  @D_CTL  @F_SFT  _       lft     down    up      rght    _       _       _
   @funct   _       _       _       _       _       _       _       _       _       _       @funct
-           @hyper  lalt    @esc-bspc       spc                     ret     _
+           @hyper  lalt    @esc-bspc       @spc-ime                ret     _
 )
 
 ;; =========================
@@ -170,7 +264,7 @@
   _        brdn    brup    mctl    sls     dtn     dnd     prev    pp      next    mute    voldwn  volu
            f1      f2      f3      f4      f5      f6      f7      f8      f9      f10     f11     f12     _
   _        _       _       _       _       _       _       7       8       9       _       _       _       _
-  @hyper   @A_CTL  @S_ALT  @D_CMD  @F_SFT  _       _       4       5       6       _       _       _
+  @hyper   @A_GUI  @S_ALT  @D_CTL  @F_SFT  _       _       4       5       6       _       _       _
   @funct   _       _       _       _       _       0       1       2       3       _       @funct
            @hyper  lalt    @esc-bspc       _                       ret     _
 )
